@@ -9,6 +9,7 @@ import {
   Link,
   TextField,
   Typography,
+  InputAdornment,
 } from "@mui/material";
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -19,6 +20,10 @@ import api, {
   Test,
   TestByTeacher,
 } from "../services/api";
+import SendIcon from "@mui/icons-material/Send";
+import { AxiosError } from "axios";
+import useAlert from "../hooks/useAlert";
+import { showMessage } from "../services/showMessage";
 
 function Instructors() {
   const navigate = useNavigate();
@@ -27,12 +32,14 @@ function Instructors() {
     TestByTeacher[]
   >([]);
   const [categories, setCategories] = useState<Category[]>([]);
+  const [search, SetSearch] = useState<string>("");
+  const { setMessage } = useAlert();
 
   useEffect(() => {
     async function loadPage() {
       if (!token) return;
 
-      const { data: testsData } = await api.getTestsByTeacher(token);
+      const { data: testsData } = await api.getTestsByTeacher(token, "");
       setTeachersDisciplines(testsData.tests);
       const { data: categoriesData } = await api.getCategories(token);
       setCategories(categoriesData.categories);
@@ -40,11 +47,46 @@ function Instructors() {
     loadPage();
   }, [token]);
 
+  function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
+    e.preventDefault();
+    SetSearch(e.target.value);
+  }
+
+  async function handleSearchSubmit(e: React.FormEvent) {
+    e.preventDefault();
+
+    if (!token) return;
+
+    try {
+      const { data: testsData } = await api.getTestsByTeacher(token, search);
+      setTeachersDisciplines(testsData.tests);
+
+      const { data: categoriesData } = await api.getCategories(token);
+      setCategories(categoriesData.categories);
+
+      setMessage({
+        type: "success",
+        text: `Pesquisa por ${search} completa`,
+      });
+    } catch (error: Error | AxiosError | any) {
+      showMessage(error, setMessage);
+    }
+  }
+
   return (
     <>
       <TextField
         sx={{ marginX: "auto", marginBottom: "25px", width: "450px" }}
         label="Pesquise por pessoa instrutora"
+        onChange={handleChange}
+        value={search}
+        InputProps={{
+          endAdornment: (
+            <InputAdornment position="end">
+              <SendIcon onClick={handleSearchSubmit} />
+            </InputAdornment>
+          ),
+        }}
       />
       <Divider sx={{ marginBottom: "35px" }} />
       <Box

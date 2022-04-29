@@ -1,6 +1,6 @@
 import { createContext, useState } from "react";
 
-interface AlertMessage {
+export interface AlertMessage {
   type: "success" | "error";
   text: string;
 }

@@ -6,6 +6,7 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
+
 import { AxiosError } from "axios";
 import React, { useState } from "react";
 import { Link as RouterLink, useNavigate } from "react-router-dom";
@@ -14,6 +15,7 @@ import Form from "../components/Form";
 import PasswordInput from "../components/PasswordInput";
 import useAlert from "../hooks/useAlert";
 import api from "../services/api";
+import { showMessage } from "../services/showMessage";
 
 const styles = {
   container: {
@@ -83,17 +85,7 @@ function SignUp() {
       setMessage({ type: "success", text: "Cadastro efetuado com sucesso!" });
       navigate("/login");
     } catch (error: Error | AxiosError | any) {
-      if (error.response) {
-        setMessage({
-          type: "error",
-          text: error.response.data,
-        });
-        return;
-      }
-      setMessage({
-        type: "error",
-        text: "Erro, tente novamente em alguns segundos!",
-      });
+      showMessage(error, setMessage);
     }
   }
 
@@ -115,6 +107,7 @@ function SignUp() {
           <Divider sx={{ flex: "1" }} />
         </Box>
         <TextField
+          id="email"
           name="email"
           sx={styles.input}
           label="Email"

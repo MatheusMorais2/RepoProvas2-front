@@ -9,6 +9,7 @@ import {
   Link,
   TextField,
   Typography,
+  InputAdornment,
 } from "@mui/material";
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -20,18 +21,24 @@ import api, {
   Test,
   TestByDiscipline,
 } from "../services/api";
+import SendIcon from "@mui/icons-material/Send";
+import { AxiosError } from "axios";
+import useAlert from "../hooks/useAlert";
+import { showMessage } from "../services/showMessage";
 
 function Disciplines() {
   const navigate = useNavigate();
   const { token } = useAuth();
+  const { setMessage } = useAlert();
   const [terms, setTerms] = useState<TestByDiscipline[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
+  const [search, SetSearch] = useState<string>("");
 
   useEffect(() => {
     async function loadPage() {
       if (!token) return;
 
-      const { data: testsData } = await api.getTestsByDiscipline(token);
+      const { data: testsData } = await api.getTestsByDiscipline(token, "");
       setTerms(testsData.tests);
       const { data: categoriesData } = await api.getCategories(token);
       setCategories(categoriesData.categories);
@@ -39,11 +46,48 @@ function Disciplines() {
     loadPage();
   }, [token]);
 
+  function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
+    e.preventDefault();
+    SetSearch(e.target.value);
+  }
+
+  async function handleSearchSubmit(e: React.FormEvent) {
+    e.preventDefault();
+
+    if (!token) return;
+
+    try {
+      const { data: testsData } = await api.getTestsByDiscipline(token, search);
+      setTerms(testsData.tests);
+      console.log("testsData.tests: ", testsData.tests);
+
+      const { data: categoriesData } = await api.getCategories(token);
+      setCategories(categoriesData.categories);
+      console.log("categoriesData.categories: ", categoriesData.categories);
+
+      setMessage({
+        type: "success",
+        text: `Pesquisa por ${search} completa`,
+      });
+    } catch (error: Error | AxiosError | any) {
+      showMessage(error, setMessage);
+    }
+  }
+
   return (
     <>
       <TextField
         sx={{ marginX: "auto", marginBottom: "25px", width: "450px" }}
         label="Pesquise por disciplina"
+        onChange={handleChange}
+        value={search}
+        InputProps={{
+          endAdornment: (
+            <InputAdornment position="end">
+              <SendIcon onClick={handleSearchSubmit} />
+            </InputAdornment>
+          ),
+        }}
       />
       <Divider sx={{ marginBottom: "35px" }} />
       <Box

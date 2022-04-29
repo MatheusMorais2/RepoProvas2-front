@@ -71,18 +71,18 @@ export type TestByTeacher = TeacherDisciplines & {
   tests: Test[];
 };
 
-async function getTestsByDiscipline(token: string) {
+async function getTestsByDiscipline(token: string, searchQuery: string | null) {
   const config = getConfig(token);
   return baseAPI.get<{ tests: TestByDiscipline[] }>(
-    "/tests?groupBy=disciplines",
+    `/tests?groupBy=disciplines${searchQuery ? `&search=${searchQuery}` : ""}`,
     config
   );
 }
 
-async function getTestsByTeacher(token: string) {
+async function getTestsByTeacher(token: string, searchQuery: string | null) {
   const config = getConfig(token);
   return baseAPI.get<{ tests: TestByTeacher[] }>(
-    "/tests?groupBy=teachers",
+    `/tests?groupBy=teachers${searchQuery ? `&search=${searchQuery}` : ""}`,
     config
   );
 }
@@ -91,6 +91,11 @@ async function getCategories(token: string) {
   const config = getConfig(token);
   return baseAPI.get<{ categories: Category[] }>("/categories", config);
 }
+
+/* async function searchDisciplines(token: string, query: string) {
+  const config = getConfig(token);
+  return baseAPI.get()
+}  */
 
 const api = {
   signUp,

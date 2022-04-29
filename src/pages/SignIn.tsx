@@ -6,6 +6,7 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
+
 import { AxiosError } from "axios";
 import React, { useState } from "react";
 import { Link as RouterLink, useNavigate } from "react-router-dom";
@@ -15,6 +16,7 @@ import PasswordInput from "../components/PasswordInput";
 import useAlert from "../hooks/useAlert";
 import useAuth from "../hooks/useAuth";
 import api from "../services/api";
+import { showMessage } from "../services/showMessage";
 
 const styles = {
   container: {
@@ -77,18 +79,7 @@ function SignIn() {
       signIn(token);
       navigate("/app/disciplinas");
     } catch (error: Error | AxiosError | any) {
-      if (error.response) {
-        setMessage({
-          type: "error",
-          text: error.response.data,
-        });
-        return;
-      }
-
-      setMessage({
-        type: "error",
-        text: "Erro, tente novamente em alguns segundos!",
-      });
+      showMessage(error, setMessage);
     }
   }
 
