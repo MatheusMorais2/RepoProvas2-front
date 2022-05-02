@@ -37,11 +37,14 @@ function Disciplines() {
   useEffect(() => {
     async function loadPage() {
       if (!token) return;
-
-      const { data: testsData } = await api.getTestsByDiscipline(token, "");
-      setTerms(testsData.tests);
-      const { data: categoriesData } = await api.getCategories(token);
-      setCategories(categoriesData.categories);
+      try {
+        const { data: testsData } = await api.getTestsByDiscipline(token, "");
+        setTerms(testsData.tests);
+        const { data: categoriesData } = await api.getCategories(token);
+        setCategories(categoriesData.categories);
+      } catch (error: Error | AxiosError | any) {
+        showMessage(error, setMessage);
+      }
     }
     loadPage();
   }, [token]);
