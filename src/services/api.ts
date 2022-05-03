@@ -86,15 +86,18 @@ async function getTestsByDiscipline(token: string, searchQuery: string | null) {
     `/tests?groupBy=disciplines${searchQuery ? `&search=${searchQuery}` : ""}`,
     config
   );
+  console.log("testByDiscipline.data: ", testsByDiscipline.data);
   return testsByDiscipline;
 }
 
 async function getTestsByTeacher(token: string, searchQuery: string | null) {
   const config = getConfig(token);
-  return baseAPI.get<{ tests: TestByTeacher[] }>(
+  const testsByTeacher = await baseAPI.get<{ tests: TestByTeacher[] }>(
     `/tests?groupBy=teachers${searchQuery ? `&search=${searchQuery}` : ""}`,
     config
   );
+  console.log("testsByTeacher: ", testsByTeacher.data);
+  return testsByTeacher;
 }
 
 async function getCategories(token: string) {
