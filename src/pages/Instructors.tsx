@@ -1,4 +1,5 @@
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import VisibilityOutlinedIcon from "@mui/icons-material/VisibilityOutlined";
 import {
   Accordion,
   AccordionDetails,
@@ -234,18 +235,60 @@ interface TestsProps {
 }
 
 function Tests({ tests, disciplineName }: TestsProps) {
+  const { setMessage } = useAlert();
+
+  const { token } = useAuth();
+
+  async function handleLinkClick(
+    e: React.MouseEvent,
+    testId: number,
+    setViews: React.Dispatch<React.SetStateAction<number>>,
+    pdfUrl: string
+  ) {
+    e.preventDefault();
+    try {
+      if (!token) return;
+
+      await api.increaseViews(token, testId);
+      const views = await api.getViews(token, testId);
+      setViews(views.data.views);
+
+      window.open(pdfUrl, "_blank");
+    } catch (error: Error | AxiosError | any) {
+      showMessage(error, setMessage);
+    }
+  }
+
   return (
     <>
-      {tests.map((test) => (
-        <Typography key={test.id} color="#878787">
-          <Link
-            href={test.pdfUrl}
-            target="_blank"
-            underline="none"
-            color="inherit"
-          >{`${test.name} (${disciplineName})`}</Link>
-        </Typography>
-      ))}
+      {tests.map((test) => {
+        const [views, setViews] = useState(test._count.View);
+        return (
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "space-between",
+              width: "100%",
+            }}
+            key={test.id}
+          >
+            <Typography key={test.id} color="#878787">
+              <Link
+                href={test.pdfUrl}
+                target="_blank"
+                underline="none"
+                color="inherit"
+                onClick={(e) =>
+                  handleLinkClick(e, test.id, setViews, test.pdfUrl)
+                }
+              >{`${test.name} (${disciplineName})`}</Link>
+            </Typography>
+            <Box sx={{ display: "flex", alignItems: "center", gap: "4px" }}>
+              <VisibilityOutlinedIcon /> {`  ${views}`}
+            </Box>
+          </Box>
+        );
+      })}
     </>
   );
 }

@@ -59,6 +59,7 @@ export interface Test {
   name: string;
   pdfUrl: string;
   category: Category;
+  _count: { View: number };
 }
 
 export interface CreateTest {
@@ -81,10 +82,11 @@ export type TestByTeacher = TeacherDisciplines & {
 
 async function getTestsByDiscipline(token: string, searchQuery: string | null) {
   const config = getConfig(token);
-  return baseAPI.get<{ tests: TestByDiscipline[] }>(
+  const testsByDiscipline = await baseAPI.get<{ tests: TestByDiscipline[] }>(
     `/tests?groupBy=disciplines${searchQuery ? `&search=${searchQuery}` : ""}`,
     config
   );
+  return testsByDiscipline;
 }
 
 async function getTestsByTeacher(token: string, searchQuery: string | null) {
@@ -110,6 +112,17 @@ async function createTest(token: string, testData: CreateTest) {
   return baseAPI.post("/tests", testData, config);
 }
 
+async function increaseViews(token: string, testId: number) {
+  const config = getConfig(token);
+  return baseAPI.post(`/tests/views/${testId}`, "", config);
+}
+
+async function getViews(token: string, testId: number) {
+  const config = getConfig(token);
+  const returnGetViews = await baseAPI.get(`/tests/views/${testId}`, config);
+  return returnGetViews;
+}
+
 const api = {
   signUp,
   signIn,
@@ -118,6 +131,8 @@ const api = {
   getCategories,
   getDisciplines,
   createTest,
+  increaseViews,
+  getViews,
 };
 
 export default api;
